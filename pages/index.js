@@ -103,23 +103,30 @@ async function getColorFromImage(imageSrc) {
   const ctx = canvas.getContext("2d");
   ctx.drawImage(img, 0, 0, img.width, img.height);
 
-  const centerPixelData = ctx.getImageData(
-    Math.floor(img.width / 2),
-    Math.floor(img.height / 2),
-    1,
-    1
-  ).data;
-  return rgbToHex(centerPixelData[0], centerPixelData[1], centerPixelData[2]);
+  const sampleSize = 10;
+  const halfSampleSize = Math.floor(sampleSize / 2);
+  const centerX = Math.floor(img.width / 2);
+  const centerY = Math.floor(img.height / 2);
+  const imageData = ctx.getImageData(centerX - halfSampleSize, centerY - halfSampleSize, sampleSize, sampleSize).data;
+
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  const totalPixels = Math.floor(imageData.length / 4);
+
+  for (let i = 0; i < imageData.length; i += 4) {
+    r += imageData[i];
+    g += imageData[i + 1];
+    b += imageData[i + 2];
+  }
+
+  r = Math.floor(r / totalPixels);
+  g = Math.floor(g / totalPixels);
+  b = Math.floor(b / totalPixels);
+
+  return rgbToHex(r, g, b);
 }
 
 function rgbToHex(r, g, b) {
-  return (
-    "#" +
-    [r, g, b]
-      .map((x) => {
-        const hex = x.toString(16);
-        return hex.length === 1 ? "0" + hex : hex;
-      })
-      .join("")
-  );
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
