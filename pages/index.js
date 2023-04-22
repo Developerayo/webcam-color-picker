@@ -28,7 +28,8 @@ const CaptureButton = styled.button`
 
 const ColorPreview = styled.div`
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
   margin-top: 1rem;
 `;
 
@@ -37,7 +38,7 @@ const ColorBox = styled.div`
   height: 2rem;
   border-radius: 50%;
   background-color: ${({ color }) => color};
-  margin-right: 0.5rem;
+  margin: 0.5rem;
 `;
 
 const GlobalStyle = css`
@@ -58,12 +59,12 @@ const videoConstraints = {
 
 export default function Home() {
   const webcamRef = useRef(null);
-  const [hexColor, setHexColor] = useState(null);
+  const [hexColors, setHexColors] = useState([]);
 
   const capture = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
-    const color = await getColorFromImage(imageSrc);
-    setHexColor(color);
+    const colors = await getColorsFromImage(imageSrc);
+    setHexColors(colors);
   };
 
   return (
@@ -79,10 +80,11 @@ export default function Home() {
           videoConstraints={videoConstraints}
         />
         <CaptureButton onClick={capture}>Capture</CaptureButton>
-        {hexColor && (
+        {hexColors.length > 0 && (
           <ColorPreview>
-            <ColorBox color={hexColor} />
-            <p>Detected color: {hexColor}</p>
+            {hexColors.map((color, index) => (
+              <ColorBox key={index} color={color} />
+            ))}
           </ColorPreview>
         )}
       </Container>
@@ -90,7 +92,7 @@ export default function Home() {
   );
 }
 
-async function getColorFromImage(imageSrc) {
+async function getColorsFromImage(imageSrc) {
   const img = new Image();
   img.src = imageSrc;
   await new Promise((resolve) => {
@@ -107,7 +109,21 @@ async function getColorFromImage(imageSrc) {
   const halfSampleSize = Math.floor(sampleSize / 2);
   const centerX = Math.floor(img.width / 2);
   const centerY = Math.floor(img.height / 2);
-  const imageData = ctx.getImageData(centerX - halfSampleSize, centerY - halfSampleSize, sampleSize, sampleSize).data;
+
+  const positions = [
+    { x: centerX, y: centerY },
+    { x: centerX + halfSampleSize, y: centerY - halfSampleSize },
+    { x: centerX - halfSampleSize, y: centerY + halfSampleSize },
+    { x: centerX + halfSampleSize, y: centerY + halfSampleSize },
+  ];
+
+  const colors = await Promise.all(positions.map(async (pos) => getColorFromImageData(ctx, pos, sampleSize)));
+
+  return colors;
+}
+
+async function getColorFromImageData(ctx, position, sampleSize) {
+  const imageData = ctx.getImageData(position.x, position.y, sampleSize, sampleSize).data;
 
   let r = 0;
   let g = 0;
