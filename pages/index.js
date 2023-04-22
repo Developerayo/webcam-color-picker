@@ -34,11 +34,18 @@ const ColorPreview = styled.div`
 `;
 
 const ColorBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0.5rem;
+`;
+
+const ColorCircle = styled.div`
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
   background-color: ${({ color }) => color};
-  margin: 0.5rem;
+  margin-bottom: 0.5rem;
 `;
 
 const GlobalStyle = css`
@@ -83,7 +90,11 @@ export default function Home() {
         {hexColors.length > 0 && (
           <ColorPreview>
             {hexColors.map((color, index) => (
-              <ColorBox key={index} color={color} />
+              <ColorBox key={index}>
+                <ColorCircle color={color.hex} />
+                <p>{color.hex}</p>
+                <p>{`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}</p>
+              </ColorBox>
             ))}
           </ColorPreview>
         )}
@@ -112,6 +123,7 @@ async function getColorsFromImage(imageSrc) {
 
   const positions = [
     { x: centerX, y: centerY },
+    { x: centerX - halfSampleSize, y: centerY - halfSampleSize },
     { x: centerX + halfSampleSize, y: centerY - halfSampleSize },
     { x: centerX - halfSampleSize, y: centerY + halfSampleSize },
     { x: centerX + halfSampleSize, y: centerY + halfSampleSize },
@@ -140,7 +152,12 @@ async function getColorFromImageData(ctx, position, sampleSize) {
   g = Math.floor(g / totalPixels);
   b = Math.floor(b / totalPixels);
 
-  return rgbToHex(r, g, b);
+  const hex = rgbToHex(r, g, b);
+
+  return {
+    hex: hex,
+    rgb: { r, g, b },
+  };
 }
 
 function rgbToHex(r, g, b) {
