@@ -11,6 +11,35 @@ const Container = styled.div`
   height: 100vh;
 `;
 
+const CaptureButton = styled.button`
+  background-color: #0070f3;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: #005fd3;
+  }
+`;
+
+const ColorPreview = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+`;
+
+const ColorBox = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: ${({ color }) => color};
+  margin-right: 0.5rem;
+`;
+
 const GlobalStyle = css`
   body {
     margin: 0;
@@ -49,8 +78,13 @@ export default function Home() {
           width={1280}
           videoConstraints={videoConstraints}
         />
-        <button onClick={capture}>Capture</button>
-        {hexColor && <p>Detected color: {hexColor}</p>}
+        <CaptureButton onClick={capture}>Capture</CaptureButton>
+        {hexColor && (
+          <ColorPreview>
+            <ColorBox color={hexColor} />
+            <p>Detected color: {hexColor}</p>
+          </ColorPreview>
+        )}
       </Container>
     </>
   );
