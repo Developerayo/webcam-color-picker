@@ -77,6 +77,19 @@ const CopyButton = styled.button`
   }
 `;
 
+const Notification = styled.div`
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background-color: ${({ success }) => (success ? "#4CAF50" : "#f44336")};
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: ${({ visible }) => (visible ? 1 : 0)};
+  transition: opacity 0.3s;
+`;
+
 const GlobalStyle = css`
   body {
     margin: 0;
@@ -96,7 +109,6 @@ const GlobalStyle = css`
       transform: translateY(0);
     }
   }
-  
 `;
 
 const videoConstraints = {
@@ -108,6 +120,7 @@ const videoConstraints = {
 export default function Home() {
   const webcamRef = useRef(null);
   const [hexColors, setHexColors] = useState([]);
+  const [notification, setNotification] = useState({ message: "", visible: false, success: true });
 
   const capture = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -115,9 +128,51 @@ export default function Home() {
     setHexColors(colors);
   };
 
+  function copyToClipboard(text, successCallback, errorCallback) {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        successCallback();
+      },
+      (err) => {
+        errorCallback(err);
+      }
+    );
+  }
+
+  function handleCopyClick(color, type) {
+    const successCallback = () => {
+      const message = type === "hex" ? "Hex code copied" : "RGB code copied";
+      setNotification({ message, visible: true, success: true });
+      setTimeout(() => {
+        setNotification({ message: "", visible: false });
+      }, 2000);
+    };
+
+    const errorCallback = (err) => {
+      console.error("Could not copy text: ", err);
+      setNotification({ message: "Copy failed", visible: true, success: false });
+      setTimeout(() => {
+        setNotification({ message: "", visible: false });
+      }, 2000);
+    };
+
+    if (type === "hex") {
+      copyToClipboard(color.hex, successCallback, errorCallback);
+    } else if (type === "rgb") {
+      const rgbText = `rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`;
+      copyToClipboard(rgbText, successCallback, errorCallback);
+    }
+  }
+
   return (
     <>
       <Global styles={GlobalStyle} />
+      <Notification
+        visible={notification.visible}
+        success={notification.success}
+      >
+        {notification.message}
+      </Notification>
       <Container>
         <Webcam
           audio={false}
@@ -130,30 +185,29 @@ export default function Home() {
         <CaptureButton onClick={capture}>Capture</CaptureButton>
         {hexColors.length > 0 && (
           <ColorPreview>
-          {hexColors.map((color, index) => (
-            <ColorBox key={index}>
-              <ColorCircle color={color.hex} />
-              <p>
-                {color.hex}
-                <CopyButton onClick={() => handleCopyClick(color, "hex")}>
-                  Copy
-                </CopyButton>
-              </p>
-              <p>
-                {`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}
-                <CopyButton onClick={() => handleCopyClick(color, "rgb")}>
-                  Copy
-                </CopyButton>
-              </p>
-            </ColorBox>
-          ))}
-        </ColorPreview>
-      )}
-    </Container>
-  </>
-);
+            {hexColors.map((color, index) => (
+              <ColorBox key={index}>
+                <ColorCircle color={color.hex} />
+                <p>
+                  {color.hex}
+                  <CopyButton onClick={() => handleCopyClick(color, "hex")}>
+                    Copy
+                  </CopyButton>
+                </p>
+                <p>
+                  {`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}
+                  <CopyButton onClick={() => handleCopyClick(color, "rgb")}>
+                    Copy
+                  </CopyButton>
+                </p>
+              </ColorBox>
+            ))}
+          </ColorPreview>
+        )}
+      </Container>
+    </>
+  );
 }
-
 
 async function getColorsFromImage(imageSrc) {
   const img = new Image();
