@@ -65,6 +65,18 @@ const ColorCircle = styled.div`
   margin-bottom: 0.5rem;
 `;
 
+const CopyButton = styled.button`
+  background-color: transparent;
+  border: none;
+  color: #0070f3;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const GlobalStyle = css`
   body {
     margin: 0;
@@ -84,6 +96,7 @@ const GlobalStyle = css`
       transform: translateY(0);
     }
   }
+  
 `;
 
 const videoConstraints = {
@@ -120,8 +133,18 @@ export default function Home() {
           {hexColors.map((color, index) => (
             <ColorBox key={index}>
               <ColorCircle color={color.hex} />
-              <p>{color.hex}</p>
-              <p>{`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}</p>
+              <p>
+                {color.hex}
+                <CopyButton onClick={() => handleCopyClick(color, "hex")}>
+                  Copy
+                </CopyButton>
+              </p>
+              <p>
+                {`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}
+                <CopyButton onClick={() => handleCopyClick(color, "rgb")}>
+                  Copy
+                </CopyButton>
+              </p>
             </ColorBox>
           ))}
         </ColorPreview>
@@ -187,6 +210,27 @@ async function getColorFromImageData(ctx, position, sampleSize) {
     rgb: { r, g, b },
   };
 }
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(
+    () => {
+      console.log(`Copied: ${text}`);
+    },
+    (err) => {
+      console.error("Could not copy text: ", err);
+    }
+  );
+}
+
+function handleCopyClick(color, type) {
+  if (type === "hex") {
+    copyToClipboard(color.hex);
+  } else if (type === "rgb") {
+    const rgbText = `rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`;
+    copyToClipboard(rgbText);
+  }
+}
+
 
 function rgbToHex(r, g, b) {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
