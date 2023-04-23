@@ -114,14 +114,17 @@ const GlobalStyle = css`
 `;
 
 function getVideoConstraints() {
-  const idealWidth = Math.min(window.innerWidth, 540);
-  const idealHeight = Math.min(window.innerHeight, 280);
+  if (typeof window !== "undefined") {
+    const idealWidth = Math.min(window.innerWidth, 540);
+    const idealHeight = Math.min(window.innerHeight, 280);
 
-  return {
-    width: { ideal: idealWidth },
-    height: { ideal: idealHeight },
-    facingMode: "user",
-  };
+    return {
+      width: { ideal: idealWidth },
+      height: { ideal: idealHeight },
+      facingMode: "user",
+    };
+  }
+  return {};
 }
 
 export default function Home() {
@@ -131,13 +134,15 @@ export default function Home() {
   const [videoConstraints, setVideoConstraints] = useState(getVideoConstraints());
 
   useEffect(() => {
-    const handleResize = () => {
-      setVideoConstraints(getVideoConstraints());
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    if (typeof window !== "undefined") {
+      const handleResize = () => {
+        setVideoConstraints(getVideoConstraints());
+      };
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
   }, []);
-  
+
   const capture = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
     const colors = await getColorsFromImage(imageSrc);
