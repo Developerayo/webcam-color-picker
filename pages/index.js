@@ -27,9 +27,10 @@ const CaptureButton = styled.button`
 `;
 
 const ColorPreview = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+  justify-items: center;
   margin-top: 1rem;
 `;
 
@@ -37,7 +38,23 @@ const ColorBox = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0.5rem;
+  opacity: 0;
+  animation: fadeIn 1s forwards;
+  &:nth-of-type(1) {
+    animation-delay: 0.2s;
+  }
+  &:nth-of-type(2) {
+    animation-delay: 0.4s;
+  }
+  &:nth-of-type(3) {
+    animation-delay: 0.6s;
+  }
+  &:nth-of-type(4) {
+    animation-delay: 0.8s;
+  }
+  &:nth-of-type(5) {
+    animation-delay: 1s;
+  }
 `;
 
 const ColorCircle = styled.div`
@@ -55,6 +72,17 @@ const GlobalStyle = css`
       Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 `;
 
@@ -89,19 +117,20 @@ export default function Home() {
         <CaptureButton onClick={capture}>Capture</CaptureButton>
         {hexColors.length > 0 && (
           <ColorPreview>
-            {hexColors.map((color, index) => (
-              <ColorBox key={index}>
-                <ColorCircle color={color.hex} />
-                <p>{color.hex}</p>
-                <p>{`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}</p>
-              </ColorBox>
-            ))}
-          </ColorPreview>
-        )}
-      </Container>
-    </>
-  );
+          {hexColors.map((color, index) => (
+            <ColorBox key={index}>
+              <ColorCircle color={color.hex} />
+              <p>{color.hex}</p>
+              <p>{`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}</p>
+            </ColorBox>
+          ))}
+        </ColorPreview>
+      )}
+    </Container>
+  </>
+);
 }
+
 
 async function getColorsFromImage(imageSrc) {
   const img = new Image();
