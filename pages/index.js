@@ -87,8 +87,8 @@ const GlobalStyle = css`
 `;
 
 const videoConstraints = {
-  width: 1280,
-  height: 720,
+  width: 540,
+  height: 280,
   facingMode: "user",
 };
 
