@@ -117,16 +117,15 @@ async function getColorsFromImage(imageSrc) {
   ctx.drawImage(img, 0, 0, img.width, img.height);
 
   const sampleSize = 10;
-  const halfSampleSize = Math.floor(sampleSize / 2);
-  const centerX = Math.floor(img.width / 2);
-  const centerY = Math.floor(img.height / 2);
+  const stepX = Math.floor(img.width / 6);
+  const stepY = Math.floor(img.height / 6);
 
   const positions = [
-    { x: centerX, y: centerY },
-    { x: centerX - halfSampleSize, y: centerY - halfSampleSize },
-    { x: centerX + halfSampleSize, y: centerY - halfSampleSize },
-    { x: centerX - halfSampleSize, y: centerY + halfSampleSize },
-    { x: centerX + halfSampleSize, y: centerY + halfSampleSize },
+    { x: stepX, y: stepY },
+    { x: stepX * 2, y: stepY * 4 },
+    { x: stepX * 4, y: stepY * 4 },
+    { x: stepX * 5, y: stepY },
+    { x: stepX * 3, y: stepY * 2 },
   ];
 
   const colors = await Promise.all(positions.map(async (pos) => getColorFromImageData(ctx, pos, sampleSize)));
