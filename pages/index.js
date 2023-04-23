@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Webcam from "react-webcam";
 import { Global, css } from "@emotion/react";
 import styled from "@emotion/styled";
@@ -8,7 +8,8 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 1rem;
 `;
 
 const CaptureButton = styled.button`
@@ -28,10 +29,11 @@ const CaptureButton = styled.button`
 
 const ColorPreview = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 1rem;
   justify-items: center;
   margin-top: 1rem;
+  width: 100%;
 `;
 
 const ColorBox = styled.div`
@@ -111,17 +113,31 @@ const GlobalStyle = css`
   }
 `;
 
-const videoConstraints = {
-  width: 540,
-  height: 280,
-  facingMode: "user",
-};
+function getVideoConstraints() {
+  const idealWidth = Math.min(window.innerWidth, 540);
+  const idealHeight = Math.min(window.innerHeight, 280);
+
+  return {
+    width: { ideal: idealWidth },
+    height: { ideal: idealHeight },
+    facingMode: "user",
+  };
+}
 
 export default function Home() {
   const webcamRef = useRef(null);
   const [hexColors, setHexColors] = useState([]);
   const [notification, setNotification] = useState({ message: "", visible: false, success: true });
+  const [videoConstraints, setVideoConstraints] = useState(getVideoConstraints());
 
+  useEffect(() => {
+    const handleResize = () => {
+      setVideoConstraints(getVideoConstraints());
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  
   const capture = async () => {
     const imageSrc = webcamRef.current.getScreenshot();
     const colors = await getColorsFromImage(imageSrc);
