@@ -179,13 +179,18 @@ export default function Home() {
 
   function handleCopyClick(color, type) {
     const successCallback = () => {
-      const message = type === "hex" ? "Hex code copied" : "RGB code copied";
+      const message =
+        type === "hex"
+          ? "Hex code copied"
+          : type === "rgb"
+          ? "RGB code copied"
+          : "CMYK code copied";
       setNotification({ message, visible: true, success: true });
       setTimeout(() => {
         setNotification({ message: "", visible: false });
       }, 2000);
     };
-
+  
     const errorCallback = (err) => {
       console.error("Could not copy text: ", err);
       setNotification({ message: "Copy failed", visible: true, success: false });
@@ -193,65 +198,71 @@ export default function Home() {
         setNotification({ message: "", visible: false });
       }, 2000);
     };
-
+  
     if (type === "hex") {
       copyToClipboard(color.hex, successCallback, errorCallback);
     } else if (type === "rgb") {
       const rgbText = `rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`;
       copyToClipboard(rgbText, successCallback, errorCallback);
+    } else if (type === "cmyk") {
+      const cmykText = `cmyk(${color.cmyk.c.toFixed(
+        2
+      )}, ${color.cmyk.m.toFixed(2)}, ${color.cmyk.y.toFixed(2)}, ${color.cmyk.k.toFixed(2)})`;
+      copyToClipboard(cmykText, successCallback, errorCallback);
     }
   }
+  
 
   return (
     <>
-      <Global styles={GlobalStyle} />
-      <Notification
-        visible={notification.visible}
-        success={notification.success}
-      >
-        {notification.message}
-      </Notification>
-      <Container>
-        <Webcam
-          audio={false}
-          height={720}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={1280}
-          videoConstraints={videoConstraints}
-        />
-        <CaptureButton onClick={capture}>Capture</CaptureButton>
-        {hexColors.length > 0 && (
-    <ColorPreview>
-      {hexColors.map((color, index) => (
-        <ColorBox key={index}>
-          <ColorCircle color={color.hex} />
-          <p>
-            {color.hex}
-            <CopyButton onClick={() => handleCopyClick(color, "hex")}>
-              Copy
-            </CopyButton>
-          </p>
-          <p>
-            {`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}
-            <CopyButton onClick={() => handleCopyClick(color, "rgb")}>
-              Copy
-            </CopyButton>
-          </p>
-          <p>
-            {`CMYK(${color.cmyk.c.toFixed(2)}, ${color.cmyk.m.toFixed(2)}, ${color.cmyk.y.toFixed(2)}, ${color.cmyk.k.toFixed(2)})`}
-            <CopyButton onClick={() => handleCopyClick(color, "cmyk")}>
-              Copy
-            </CopyButton>
-          </p>
-        </ColorBox>
-      ))}
-    </ColorPreview>
-        )}
-      </Container>
-    </>
-  );
-}
+    <Global styles={GlobalStyle} />
+    <Notification
+      visible={notification.visible}
+      success={notification.success}
+    >
+      {notification.message}
+    </Notification>
+    <Container>
+      <Webcam
+        audio={false}
+        height={720}
+        ref={webcamRef}
+        screenshotFormat="image/jpeg"
+        width={1280}
+        videoConstraints={videoConstraints}
+      />
+      <CaptureButton onClick={capture}>Capture</CaptureButton>
+      {hexColors.length > 0 && (
+        <ColorPreview>
+          {hexColors.map((color, index) => (
+            <ColorBox key={index}>
+              <ColorCircle color={color.hex} />
+              <p>
+                {color.hex}
+                <CopyButton onClick={() => handleCopyClick(color, "hex")}>
+                  Copy
+                </CopyButton>
+              </p>
+              <p>
+                {`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}
+                <CopyButton onClick={() => handleCopyClick(color, "rgb")}>
+                  Copy
+                </CopyButton>
+              </p>
+              <p>
+                {`CMYK(${color.cmyk.c.toFixed(2)}, ${color.cmyk.m.toFixed(2)}, ${color.cmyk.y.toFixed(2)}, ${color.cmyk.k.toFixed(2)})`}
+                <CopyButton onClick={() => handleCopyClick(color, "cmyk")}>
+                  Copy
+                </CopyButton>
+              </p>
+            </ColorBox>
+          ))}
+        </ColorPreview>
+      )}
+    </Container>
+  </>
+);
+          }
 
 async function getColorsFromImage(imageSrc) {
   const img = new Image();
