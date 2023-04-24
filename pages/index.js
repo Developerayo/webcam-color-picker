@@ -113,6 +113,23 @@ const GlobalStyle = css`
   }
 `;
 
+function rgbToCmyk(r, g, b) {
+  const c = 1 - r / 255;
+  const m = 1 - g / 255;
+  const y = 1 - b / 255;
+
+  const k = Math.min(c, Math.min(m, y));
+
+  if (k < 1) {
+    const c1 = (c - k) / (1 - k);
+    const m1 = (m - k) / (1 - k);
+    const y1 = (y - k) / (1 - k);
+    return { c: c1, m: m1, y: y1, k };
+  } else {
+    return { c: 0, m: 0, y: 0, k: 1 };
+  }
+}
+
 function getVideoConstraints() {
   if (typeof window !== "undefined") {
     const idealWidth = Math.min(window.innerWidth, 540);
@@ -205,25 +222,31 @@ export default function Home() {
         />
         <CaptureButton onClick={capture}>Capture</CaptureButton>
         {hexColors.length > 0 && (
-          <ColorPreview>
-            {hexColors.map((color, index) => (
-              <ColorBox key={index}>
-                <ColorCircle color={color.hex} />
-                <p>
-                  {color.hex}
-                  <CopyButton onClick={() => handleCopyClick(color, "hex")}>
-                    Copy
-                  </CopyButton>
-                </p>
-                <p>
-                  {`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}
-                  <CopyButton onClick={() => handleCopyClick(color, "rgb")}>
-                    Copy
-                  </CopyButton>
-                </p>
-              </ColorBox>
-            ))}
-          </ColorPreview>
+    <ColorPreview>
+      {hexColors.map((color, index) => (
+        <ColorBox key={index}>
+          <ColorCircle color={color.hex} />
+          <p>
+            {color.hex}
+            <CopyButton onClick={() => handleCopyClick(color, "hex")}>
+              Copy
+            </CopyButton>
+          </p>
+          <p>
+            {`RGB(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`}
+            <CopyButton onClick={() => handleCopyClick(color, "rgb")}>
+              Copy
+            </CopyButton>
+          </p>
+          <p>
+            {`CMYK(${color.cmyk.c.toFixed(2)}, ${color.cmyk.m.toFixed(2)}, ${color.cmyk.y.toFixed(2)}, ${color.cmyk.k.toFixed(2)})`}
+            <CopyButton onClick={() => handleCopyClick(color, "cmyk")}>
+              Copy
+            </CopyButton>
+          </p>
+        </ColorBox>
+      ))}
+    </ColorPreview>
         )}
       </Container>
     </>
@@ -279,10 +302,12 @@ async function getColorFromImageData(ctx, position, sampleSize) {
   b = Math.floor(b / totalPixels);
 
   const hex = rgbToHex(r, g, b);
+  const cmyk = rgbToCmyk(r, g, b);
 
   return {
     hex: hex,
     rgb: { r, g, b },
+    cmyk: { c: cmyk.c, m: cmyk.m, y: cmyk.y, k: cmyk.k },
   };
 }
 
@@ -303,8 +328,12 @@ function handleCopyClick(color, type) {
   } else if (type === "rgb") {
     const rgbText = `rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`;
     copyToClipboard(rgbText);
+  } else if (type === "cmyk") {
+    const cmykText = `cmyk(${color.cmyk.c.toFixed(2)}, ${color.cmyk.m.toFixed(2)}, ${color.cmyk.y.toFixed(2)}, ${color.cmyk.k.toFixed(2)})`;
+    copyToClipboard(cmykText);
   }
 }
+
 
 
 function rgbToHex(r, g, b) {
